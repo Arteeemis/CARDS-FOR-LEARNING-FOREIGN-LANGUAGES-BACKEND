@@ -1,5 +1,8 @@
 from app.models import WordCards, WordLists, CardsLists, User
 from rest_framework import serializers
+from collections import OrderedDict
+from app.models import CustomUser
+
 
 
 class WordCardsSerializer(serializers.ModelSerializer):
@@ -21,6 +24,15 @@ class WordCardsSerializer(serializers.ModelSerializer):
                     'word_image',
                  ]
         
+        def get_fields(self):
+            new_fields = OrderedDict()
+            for name, field in super().get_fields().items():
+                field.required = False
+                new_fields[name] = field
+            return new_fields
+        
+        
+        
 
 class WordListsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,6 +50,13 @@ class WordListsSerializer(serializers.ModelSerializer):
                     'learn_until_date'  
                  ]
         
+        def get_fields(self):
+            new_fields = OrderedDict()
+            for name, field in super().get_fields().items():
+                field.required = False
+                new_fields[name] = field
+            return new_fields
+        
 
 class CardsListsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,6 +70,15 @@ class CardsListsSerializer(serializers.ModelSerializer):
                     'lists_order' 
                  ]
         
+        def get_fields(self):
+            new_fields = OrderedDict()
+            for name, field in super().get_fields().items():
+                field.required = False
+                new_fields[name] = field
+            return new_fields
+        
+        
+        
 
 class UserRegisterSerializer(serializers.ModelSerializer):
   password = serializers.CharField(write_only=True)
@@ -63,6 +91,14 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     user = User(**validated_data) # Сохраняем пароль без хеширования
     user.save()
     return user
+  
+
+class UserSerializer(serializers.ModelSerializer):
+    is_staff = serializers.BooleanField(default=False, required=False)
+    is_superuser = serializers.BooleanField(default=False, required=False)
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'password', 'is_staff', 'is_superuser']
 
 
 class ResolveWordList(serializers.ModelSerializer):
