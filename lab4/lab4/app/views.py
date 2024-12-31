@@ -285,19 +285,26 @@ def form_list(request, pk):
   word_list = get_object_or_404(WordLists, pk=pk, status='draft', creator = request.user.id)
   if word_list is None:
       return Response("No word_list ready for formation", status=status.HTTP_404_NOT_FOUND)
-
-  time_to_learn = request.data.get('time_to_learn')
-  if time_to_learn is None or time_to_learn == "":
-      return Response("No time_to_learn written", status=status.HTTP_400_BAD_REQUEST)
-
+  deadline = request.data.get('deadline')
+  if deadline is None or deadline == "":
+      return Response("No deadline written", status=status.HTTP_400_BAD_REQUEST)
   word_list.status = 'formed'
   word_list.submition_date = datetime.datetime.now().date()
-  if time_to_learn == 'week':
+  if deadline == '':
     word_list.learn_until_date = (datetime.datetime.now() + datetime.timedelta(weeks=1)).date()
-  elif time_to_learn == 'month':
+  elif deadline == 'month':
       word_list.learn_until_date = (datetime.datetime.now() + datetime.timedelta(weeks=4)).date()
   else:
-      return Response("Incorrect time_to_learn", status=status.HTTP_400_BAD_REQUEST)
+      return Response("Incorrect deadline", status=status.HTTP_400_BAD_REQUEST)
+  #Добавил вычисляемое поле time_to_learn, которое приблизительно определяет время изучения списка в зависимости от уровня слова
+  word_cards = WordCards.objects.filter(cardslists__list=word_list).order_by('cardslists__lists_order')
+  for card in word_cards:
+     if card.word_level == 'A1' or card.word_level == 'A2':
+        word_list.time_to_learn += 5
+     elif card.word_level == 'B1' or card.word_level == 'B2':
+        word_list.time_to_learn += 10
+     elif card.word_level == 'C1' or card.word_level == 'C2':
+        word_list.time_to_learn += 20
   word_list.save()
   serializer = WordListsSerializer(word_list)
   return Response(serializer.data, status=status.HTTP_200_OK)
