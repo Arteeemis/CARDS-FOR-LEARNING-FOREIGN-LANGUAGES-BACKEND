@@ -298,6 +298,7 @@ def form_list(request, pk):
       return Response("Incorrect deadline", status=status.HTTP_400_BAD_REQUEST)
   #Добавил вычисляемое поле time_to_learn, которое приблизительно определяет время изучения списка в зависимости от уровня слова
   word_cards = WordCards.objects.filter(cardslists__list=word_list).order_by('cardslists__lists_order')
+  word_list.time_to_learn = 0
   for card in word_cards:
      if card.word_level == 'A1' or card.word_level == 'A2':
         word_list.time_to_learn += 5
