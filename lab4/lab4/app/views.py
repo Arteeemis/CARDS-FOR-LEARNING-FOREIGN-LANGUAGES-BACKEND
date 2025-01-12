@@ -139,7 +139,7 @@ def add_card_img(request, pk, format=None):
 def add_to_list(request, pk):
     word_card = WordCards.objects.filter(id=pk).first()
     if word_card is None:
-        return Response('No such card', status=status.HTTP_404_NOT_FOUND)
+        return Response('Нет такой карточки', status=status.HTTP_404_NOT_FOUND)
     req = WordLists.objects.filter(creator = request.user.id, status='draft').first()
     if not(req):
       words_list = WordLists.objects.create(status="draft", creation_date=datetime.datetime.now().date(), creator=request.user.id)
@@ -152,7 +152,7 @@ def add_to_list(request, pk):
     if not card_list:
         list_card = CardsLists(card=word_card, list=req, lists_order=order)
         list_card.save()
-    return Response('Succesfully added card to list')
+    return Response('Успешно добавлена в список')
 
 #удалить из списка
 @api_view(['DELETE'])
@@ -165,7 +165,7 @@ def delete_from_list(request, ck, lk):
     card_in_list = CardsLists.objects.filter(card=ck, list=lk).first()
     print(ck , lk)
     if card_in_list is None:
-        return Response("Card not found", status=status.HTTP_404_NOT_FOUND)
+        return Response("Карточка не найдена", status=status.HTTP_404_NOT_FOUND)
     card_in_list.delete()
     # list_id = card_in_list.list
     # print(list_id)
@@ -173,7 +173,7 @@ def delete_from_list(request, ck, lk):
     # word_list = WordLists.objects.filter(id=lk).first()
     # card = WordCards.objects.filter(id=ck).first()
     # word_list.save()
-    return Response('Card deleted from list', status=status.HTTP_200_OK)
+    return Response('Карточка удалена из списка', status=status.HTTP_200_OK)
 
 #изменить карточку в списке
 @swagger_auto_schema(method='put', request_body=None)
@@ -187,7 +187,7 @@ def change_card_in_list(request, ck, lk):
         return Response(status=status.HTTP_403_FORBIDDEN)
     card_in_list = CardsLists.objects.get(card=ck, list=lk)
     if card_in_list is None:
-        return Response("Card not found", status=status.HTTP_404_NOT_FOUND)
+        return Response("Карточка не найдена", status=status.HTTP_404_NOT_FOUND)
     print(word_list, card_in_list)
     # Get the current order of the card being changed
     current_order = card_in_list.lists_order
@@ -202,7 +202,7 @@ def change_card_in_list(request, ck, lk):
         elif card.lists_order < current_order:  # No need for second condition here
             card.lists_order += 1
         card.save()
-    return Response({"message": "Card position updated successfully."}, status=status.HTTP_200_OK) 
+    return Response({"message": "Порядок обновлен успешно"}, status=status.HTTP_200_OK) 
 
 
 #Возращает информацию о заявке
@@ -284,10 +284,10 @@ def update_word_list(request, pk, format=None):
 def form_list(request, pk):
   word_list = get_object_or_404(WordLists, pk=pk, status='draft', creator = request.user.id)
   if word_list is None:
-      return Response("No word_list ready for formation", status=status.HTTP_404_NOT_FOUND)
+      return Response("Нет списков готовых к формированию", status=status.HTTP_404_NOT_FOUND)
   deadline = request.data.get('deadline')
   if deadline is None or deadline == "":
-      return Response("No deadline written", status=status.HTTP_400_BAD_REQUEST)
+      return Response("Не указан дедлайн", status=status.HTTP_400_BAD_REQUEST)
   word_list.status = 'formed'
   word_list.submition_date = datetime.datetime.now().date()
   if deadline == '':
@@ -295,7 +295,7 @@ def form_list(request, pk):
   elif deadline == 'month':
       word_list.learn_until_date = (datetime.datetime.now() + datetime.timedelta(weeks=4)).date()
   else:
-      return Response("Incorrect deadline", status=status.HTTP_400_BAD_REQUEST)
+      return Response("Неправильный дедлайн", status=status.HTTP_400_BAD_REQUEST)
   #Добавил вычисляемое поле time_to_learn, которое приблизительно определяет время изучения списка в зависимости от уровня слова
   word_cards = WordCards.objects.filter(cardslists__list=word_list).order_by('cardslists__lists_order')
   word_list.time_to_learn = 0
@@ -325,7 +325,7 @@ def resolve_word_list(request, pk):
        resolve_decision == 'cancelled'
     
     if word_list is None:
-      return Response("No word list found", status=status.HTTP_404_NOT_FOUND)
+      return Response("Список не найден", status=status.HTTP_404_NOT_FOUND)
     serializer = ResolveWordList(word_list,data=request.data,partial=True)
     if serializer.is_valid():
       serializer.save()
@@ -336,7 +336,7 @@ def resolve_word_list(request, pk):
       word_list.save()
       serializer = ResolveWordList(word_list)
       return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response('Failed to resolve the list', status=status.HTTP_400_BAD_REQUEST)
+    return Response('Не получилось завершить список', status=status.HTTP_400_BAD_REQUEST)
 
 
 #удалить заявку
@@ -357,7 +357,7 @@ def delete_word_list(request, format=None):
         print(word_list)
         word_list.save()
 
-    return Response('deleted successfully', status=status.HTTP_204_NO_CONTENT)
+    return Response('успешно удален', status=status.HTTP_204_NO_CONTENT)
 
 
 
